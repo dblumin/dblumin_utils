@@ -19,11 +19,11 @@ def main(error_delimeter, filelist):
         symbol_file.write('#SYMBOL,VENUE,DATE')
         # comma denotes error delimeter contains multiple delimeters to look for
         for error_delimeter in error_delimeter.split(','):
-            error_dictionary[error_delimeter] = {}
+            file_list.seek(0)
+
             # for each file in filelist
             for list_line in file_list.readlines():
                 input_file = list_line.rstrip()
-                loader = None
                 split_file = input_file.split('-')
                 if len(split_file) > 1:
                     first_half = split_file[0]
@@ -33,7 +33,9 @@ def main(error_delimeter, filelist):
                     first_half = split_file[0]
                     loader = first_half[len(first_half) - 1]
                 with open(input_file, 'r') as log_file:
+                    error_dictionary[error_delimeter] = {}
                     for line in log_file.readlines():
+
                         # if line contains one of the delimeters you want to extract,
                         if error_delimeter in line:
                             # split line around error delimeter
@@ -111,7 +113,6 @@ def main(error_delimeter, filelist):
                                     symbol_file.write(f'\n{symbol}{origin_log}')
                 # for every line stored in dictionary,
                 for key in error_dictionary[error_delimeter]:
-
                     # store error type
                     error_type = error_dictionary[error_delimeter][key]
                     # convert key to generic key

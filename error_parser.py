@@ -13,7 +13,7 @@ def main(error_delimeter, filelist):
     with open(filelist, 'r') as file_list, open('summary.csv', 'w+') as output_file, open('invalid_symbols.csv', 'w+') as symbol_file:
         output_file.seek(0)
         output_file.truncate(0)
-        output_file.write('#TYPE,VENUE,DATE,COUNT,EXAMPLE')
+        output_file.write('#TYPE,INSTANCE,VENUE,DATE,COUNT,EXAMPLE')
         symbol_file.seek(0)
         symbol_file.truncate(0)
         symbol_file.write('#SYMBOL,VENUE,DATE')
@@ -23,6 +23,15 @@ def main(error_delimeter, filelist):
             # for each file in filelist
             for list_line in file_list.readlines():
                 input_file = list_line.rstrip()
+                loader = None
+                split_file = input_file.split('-')
+                if len(split_file) > 1:
+                    first_half = split_file[0]
+                    loader = first_half[len(first_half) - 1]
+                else:
+                    split_file = input_file.split('.')
+                    first_half = split_file[0]
+                    loader = first_half[len(first_half) - 1]
                 with open(input_file, 'r') as log_file:
                     for line in log_file.readlines():
                         # if line contains one of the delimeters you want to extract,
@@ -85,7 +94,7 @@ def main(error_delimeter, filelist):
                             if origin_log not in error_dictionary[error_delimeter][key]:
                                 error_dictionary[error_delimeter][key][origin_log] = []
                             # add line to lowest dictionary layer
-                            error_dictionary[error_delimeter][key][origin_log].append(line)
+                            error_dictionary[error_delimeter][key][origin_log].append([line, loader])
 
                             # if line contains invalid '::' in symbol name, write that to invalid_symbols.csv
                             if '::' in line:
@@ -120,7 +129,7 @@ def main(error_delimeter, filelist):
                     # print line with format:ERROR_TYPE,VENUE,DATE,COUNT,EXAMPLE_MESSAGE
                     for origin_key in error_type:
                         error_list = error_type[origin_key]
-                        output_file.write(f'\n\"{key}...\",{origin_key},{len(error_list)},\"{error_list[0].rstrip()}\"')
+                        output_file.write(f'\n\"{key}...\",{error_list[0][1]},{origin_key},{len(error_list)},\"{error_list[0][0].rstrip()}\"')
 
 
 if __name__ == '__main__':

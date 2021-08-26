@@ -131,17 +131,27 @@ local function extract()
 		elseif line:match(":") then
 			-- timestamp line
 			local first_colon = line:find(":")
-			local formatted_ts = os.time({
-				year = line:sub(first_colon - 13, first_colon - 10),
-				month = line:sub(first_colon - 8, first_colon - 7),
-				day = line:sub(first_colon - 5, first_colon - 4),
-				hour = line:sub(first_colon - 2, first_colon - 1),
-				min = line:sub(first_colon + 1,first_colon + 2),
-				sec = line:sub(first_colon + 4,first_colon + 5)
+			local post_symbol
+			if first_colon > 13 then
+				post_symbol = line
+			-- if first_colon occurs too soon in line, it is in a symbol. Advance to next colon to find timestamp (skipping double colon)
+			else
+				post_symbol = line:sub(first_colon + 2, #line)
+				first_colon = post_symbol:find(":")
+			end
+			formatted_ts = os.time({
+				year = post_symbol:sub(first_colon - 13, first_colon - 10),
+				month = post_symbol:sub(first_colon - 8, first_colon - 7),
+				day = post_symbol:sub(first_colon - 5, first_colon - 4),
+				hour = post_symbol:sub(first_colon - 2, first_colon - 1),
+				min = post_symbol:sub(first_colon + 1,first_colon + 2),
+				sec = post_symbol:sub(first_colon + 4,first_colon + 5)
 			})
-
 			if formatted_ts >= formatted_start and formatted_ts <= formatted_end then
+				extract_message = true
 				io.write("\n", line)
+			else
+				extract_message = false
 			end
 		end
 	end
